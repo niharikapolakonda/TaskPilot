@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskPilot | Smart Productivity</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f5f6fc;
+            --card: #ffffff;
+            --text: #20233b;
+            --muted: #777d96;
+            --primary: #6c63ff;
+            --border: #e8e9f2;
+            --green: #16a675;
+            --red: #e65370;
+            --orange: #ed9b35;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        button, input, select, textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 235px;
+            flex-shrink: 0;
+            padding: 28px 18px;
+            background: #fff;
+            border-right: 1px solid var(--border);
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 35px;
+        }
+
+        .brand span {
+            color: #242641;
+        }
+
+        .nav-label {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            margin: 20px 10px 12px;
+        }
+
+        .nav-link {
+            display: block;
+            text-decoration: none;
+            color: #606580;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 7px;
+        }
+
+        .nav-link.active,
+        .nav-link:hover {
+            background: #efedff;
+            color: var(--primary);
+        }
+
+        .sidebar-note {
+            margin-top: 45px;
+            padding: 16px;
+            background: linear-gradient(135deg, #eeeaff, #fff0f5);
+            border-radius: 16px;
+            font-size: 13px;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 26px;
+        }
+
+        .topbar h1 {
+            font-size: 28px;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .avatar {
+            width: 43px;
+            height: 43px;
+            display: grid;
+            place-items: center;
+            background: #e8e5ff;
+            color: var(--primary);
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        .hero {
+            background: linear-gradient(115deg, #6c63ff, #9681ff);
+            color: white;
+            padding: 30px;
+            border-radius: 22px;
+            margin-bottom: 25px;
+        }
+
+        .hero h2 {
+            font-size: 27px;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            opacity: .9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 17px;
+            margin-bottom: 25px;
+        }
+
+        .stat, .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px;
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: 800;
+            margin-top: 9px;
+        }
+
+        .purple { color: var(--primary); }
+        .green { color: var(--green); }
+        .orange { color: var(--orange); }
+        .red { color: var(--red); }
+
+        .columns {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .card {
+            margin-bottom: 22px;
+        }
+
+        .card h2 {
+            font-size: 19px;
+            margin-bottom: 16px;
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 13px;
+            margin: 10px 0;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background: #ececf5;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c63ff, #a18bff);
+            border-radius: 20px;
+            transition: width .3s ease;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .field input,
+        .field select,
+        .field textarea,
+        .filters input,
+        .filters select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .field textarea {
+            min-height: 75px;
+            resize: vertical;
+        }
+
+        .two-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .btn:hover {
+            opacity: .88;
+        }
+
+        .btn-secondary {
+            background: #efedff;
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: #fff0f2;
+            color: var(--red);
+        }
+
+        .btn-success {
+            background: #e6f8f1;
+            color: var(--green);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr auto;
+            gap: 9px;
+            margin-bottom: 18px;
+        }
+
+        .task-list {
+            display: grid;
+            gap: 13px;
+        }
+
+        .task {
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 17px;
+            background: #fff;
+        }
+
+        .task.completed {
+            background: #fafaff;
+        }
+
+        .task.completed .task-title {
+            text-decoration: line-through;
+            color: var(--muted);
+        }
+
+        .task-heading {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .task-title {
+            font-size: 16px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .task-description {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin: 12px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 9px;
+            background: #f0efff;
+            color: #6257db;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-high {
+            background: #fff0f1;
+            color: #d8435e;
+        }
+
+        .badge-medium {
+            background: #fff4df;
+            color: #b87913;
+        }
+
+        .badge-low {
+            background: #e8f8f0;
+            color: #16835c;
+        }
+
+        .task-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 13px;
+        }
+
+        .task-actions form {
+            display: inline;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px 15px;
+            color: var(--muted);
+            border: 1px dashed #d7d7e8;
+            border-radius: 14px;
+        }
+
+        .empty-icon {
+            font-size: 35px;
+            margin-bottom: 8px;
+        }
+
+        .category-row {
+            margin-bottom: 17px;
+        }
+
+        .category-name {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+
+        .category-bar {
+            height: 9px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #efeff7;
+        }
+
+        .category-fill {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #6c63ff, #a18bff);
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 15px 0;
+        }
+
+        @media (max-width: 1050px) {
+            .sidebar {
+                width: 190px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .columns {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 15px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .brand {
+                margin-bottom: 12px;
+            }
+
+            .nav-label,
+            .sidebar-note {
+                display: none;
+            }
+
+            .nav-link {
+                display: inline-block;
+                padding: 8px 10px;
+                margin: 0 3px 0 0;
+            }
+
+            .main {
+                padding: 16px;
+            }
+
+            .topbar h1 {
+                font-size: 23px;
+            }
+
+            .hero {
+                padding: 23px;
+            }
+
+            .hero h2 {
+                font-size: 22px;
+            }
+
+            .stats {
+                gap: 10px;
+            }
+
+            .stat, .card {
+                padding: 16px;
+            }
+
+            .stat-number {
+                font-size: 25px;
+            }
+
+            .two-fields,
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .task-heading {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="brand">✦ Task<span>Pilot</span></div>
+
+        <div class="nav-label">WORKSPACE</div>
+        <a class="nav-link active" href="{{ url_for('index') }}">▦ Dashboard</a>
+        <a class="nav-link" href="#tasks">✓ My Tasks</a>
+        <a class="nav-link" href="#analytics">▤ Productivity</a>
+        <a class="nav-link" href="#new-task">＋ Add Task</a>
+
+        <div class="sidebar-note">
+            <h3>💡 Small steps matter!</h3>
+            <p>Organize your day, focus on your goals, and celebrate every completed task.</p>
+        </div>
+    </aside>
+
+    <main class="main" id="dashboard">
+
+        <header class="topbar">
+            <div>
+                <h1>My Dashboard 👋</h1>
+                <p class="muted">Plan your day. Track your progress. Get things done.</p>
+            </div>
+            <div class="avatar">TP</div>
+        </header>
+
+        <section class="hero">
+            <h2>Your goals, one task at a time 🚀</h2>
+            <p>Welcome to TaskPilot — your personal productivity workspace.</p>
+        </section>
+
+        <section class="stats">
+            <div class="stat">
+                <div class="muted">Total Tasks</div>
+                <div class="stat-number purple">{{ total }}</div>
+                <div class="muted">All your tasks</div>
+            </div>
+
+            <div class="stat">
+                <div class="muted">Completed</div>
+                <div class="stat-number green">{{ completed }}</div>
+                <div class="muted">Great work!</div>
+            </div>
+
+            <div class="stat">
+                <div class="muted">Pending</div>
+                <div class="stat-number orange">{{ pending }}</div>
+                <div class="muted">Still to do</div>
+            </div>
+
+            <div class="stat">
+                <div class="muted">Overdue</div>
+                <div class="stat-number red">{{ overdue }}</div>
+                <div class="muted">Past their deadline</div>
+            </div>
+        </section>
+
+        <section class="columns">
+
+            <div>
+                <section class="card" id="analytics">
+                    <h2>📈 Productivity Overview</h2>
+
+                    <div class="progress-meta">
+                        <span>Overall completion</span>
+                        <strong>{{ progress }}%</strong>
+                    </div>
+
+                    <div class="progress-track">
+                        <div class="progress-fill"
+                             style="width: {{ progress }}%; "></div>
+                    </div>
+
+                    <div class="progress-meta">
+                        <span>{{ completed }} completed</span>
+                        <span>{{ pending }} remaining</span>
+                    </div>
+
+                    <p class="muted">
+                        {% if total == 0 %}
+                            Add your first task to begin!
+                        {% elif progress == 100 %}
+                            Amazing! Every task is completed! 🎉
+                        {% else %}
+                            Keep going. Every small step counts!
+                        {% endif %}
+                    </p>
+                </section>
+
+                <section class="card" id="new-task">
+                    <h2>＋ Create a New Task</h2>
+
+                    <form method="POST" action="{{ url_for('add_task') }}">
+                        <div class="field">
+                            <label for="title">Task title *</label>
+                            <input id="title" type="text" name="title"
+                                   placeholder="e.g. Complete Python assignment"
+                                   maxlength="150" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description"
+                                      placeholder="Add some details (optional)"
+                                      maxlength="1000"></textarea>
+                        </div>
+
+                        <div class="two-fields">
+                            <div class="field">
+                                <label for="category">Category</label>
+                                <select id="category" name="category">
+                                    {% for category in categories %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="priority">Priority</label>
+                                <select id="priority" name="priority">
+                                    {% for priority in priorities %}
+                                    <option value="{{ priority }}">{{ priority }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="due_date">Due date</label>
+                            <input id="due_date" type="date" name="due_date">
+                        </div>
+
+                        <button class="btn" type="submit">＋ Add Task</button>
+                    </form>
+                </section>
+            </div>
+
+            <div>
+                <section class="card">
+                    <h2>🗂️ Category Breakdown</h2>
+
+                    {% if category_counts %}
+                        {% for category, count in category_counts.items() %}
+                        <div class="category-row">
+                            <div class="category-name">
+                                <span>{{ category }}</span>
+                                <strong>{{ count }}</strong>
+                            </div>
+                            <div class="category-bar">
+                                <div class="category-fill"
+                                     style="width: {{ (count / total * 100) if total else 0 }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty">
+                            <div class="empty-icon">🗂️</div>
+                            <p>Your category breakdown will appear here.</p>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="card">
+                    <h2>✨ Productivity Tips</h2>
+                    <p class="muted">• Break big goals into smaller tasks.</p>
+                    <p class="muted">• Complete high-priority work first.</p>
+                    <p class="muted">• Set realistic deadlines.</p>
+                    <p class="muted">• Celebrate your progress.</p>
+                </section>
+            </div>
+
+        </section>
+
+        <section class="card" id="tasks">
+            <h2>✓ My Tasks</h2>
+            <p class="muted" style="margin-bottom: 18px;">
+                Search, filter, complete, or delete your tasks.
+            </p>
+
+            <form method="GET" action="{{ url_for('index') }}" class="filters">
+                <input type="search" name="search"
+                       value="{{ request.args.get('search', '') }}"
+                       placeholder="Search tasks...">
+
+                <select name="category">
+                    <option value="">All categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}"
+                        {% if request.args.get('category') == category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select name="priority">
+                    <option value="">All priorities</option>
+                    {% for priority in priorities %}
+                    <option value="{{ priority }}"
+                        {% if request.args.get('priority') == priority %}selected{% endif %}>
+                        {{ priority }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select name="status">
+                    <option value="">All statuses</option>
+                    <option value="pending"
+                        {% if request.args.get('status') == 'pending' %}selected{% endif %}>
+                        Pending
+                    </option>
+                    <option value="completed"
+                        {% if request.args.get('status') == 'completed' %}selected{% endif %}
